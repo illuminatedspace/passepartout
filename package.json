@@ -2,9 +2,12 @@
   "name": "passepartout",
   "version": "0.0.1",
   "description": "a web scraper that attempts to travel from site to site logging the locations of it's journey.",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "npm run start:dev",
+    "start:production": "node server.js",
+    "start:dev": "nodemon -e js server.js"
   },
   "repository": {
     "type": "git",
@@ -26,5 +29,9 @@
   "dependencies": {
     "cheerio": "^0.22.0",
     "express": "^4.15.2"
+  },
+  "devDependencies": {
+    "morgan": "^1.8.1",
+    "nodemon": "^1.11.0"
   }
 }
