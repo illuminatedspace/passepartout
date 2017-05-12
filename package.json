@@ -1,7 +1,7 @@
 {
   "name": "passepartout",
   "version": "0.0.1",
-  "description": "a web scraper that attempts to travel from site to site logging the locations of it's journey in a log.",
+  "description": "a web scraper that attempts to travel from site to site logging the locations of it's journey.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
