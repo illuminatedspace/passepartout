@@ -8,5 +8,5 @@ server.on('request', require('./app'))
 
 // create server listening on port 9000
 server.listen(9000, () => {
-  console.log('You are now free to roam about the port 9000 nation')
+  console.log('Passepartout had been a sort of vagrant in his early years, and now yearned for repose on port 9000.')
 })

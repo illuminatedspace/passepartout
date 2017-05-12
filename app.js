@@ -1,5 +1,6 @@
 const express = require('express')
-const morgan = require('morgan') //logging middleware
+const morgan = require('morgan') // logging middleware
+const cheerio = require('cheerio') // jQuery library, unsure that I actually need this
 
 const app = express()
 
