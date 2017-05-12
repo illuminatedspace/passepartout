@@ -1,0 +1,30 @@
+{
+  "name": "passepartout",
+  "version": "0.0.1",
+  "description": "a web scraper that attempts to travel from site to site logging the locations of it's journey in a log.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/illuminatedspace/passepartout.git"
+  },
+  "keywords": [
+    "web",
+    "scraper",
+    "javascript",
+    "node.js",
+    "fun"
+  ],
+  "author": "Liz Phillips, lizkristinaphillips.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/illuminatedspace/passepartout/issues"
+  },
+  "homepage": "https://github.com/illuminatedspace/passepartout#readme",
+  "dependencies": {
+    "cheerio": "^0.22.0",
+    "express": "^4.15.2"
+  }
+}
