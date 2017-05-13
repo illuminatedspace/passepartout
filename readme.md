@@ -1,13 +1,13 @@
-#Hello, I'm Passepartout
+# Hello, I'm Passepartout
 I'm a webscraper named after the French valet of Jules Verne's *Around the World in 80 Days* fame. I try to travel from site to site and log my journey for your amusement as I go.
 
-##Anatomy
+## Anatomy
 My internal libraries include:
 
 * Cheerio
 * Express
 
-##Credits
+## Credits
 I was built by Liz Phillips 🔮 [(illuminatedspace)](http://www.github.com/illuminatedspace).
 
 I would not be possible without:

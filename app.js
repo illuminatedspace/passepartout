@@ -4,6 +4,8 @@ const cheerio = require('cheerio') // jQuery library for the back end
 const http = require('http')// might use this instead of request
 const request = require('request')
 
+const crawl = require('./crawl')
+
 const app = express()
 
 // logging middleware for debugging purposes
@@ -19,31 +21,40 @@ app.use(morgan('dev'))
 
 
 // placeholder route to test the server
-app.get('/', (req, res, next) => res.send('You\'ve reached Passepartout. I\'m not here right now. Leave a message at the beep!'))
+app.get('/', (req, res, next) => res.send('You\'ve reached Passepartout. I\'m not here right now. Leave your message at the beep!'))
 
 app.get('/crawl', (req, res, next) => {
   console.log('request recieived')
 
-  const url = 'http://www.reddit.com';
+  const url = 'https://www.reddit.com/';
 
   // The structure of our request call
   // The first parameter is our URL
   // The callback function takes 3 parameters, an error, response status code and the html
   request(url, (err, response, html) => {
+    console.log(`sending request to ${url}`)
 
     // First we'll check to make sure no errors occurred when making the request
     if (err){
       return console.error(err)
     }
 
-    // res.send(response, html)
-
     // // Next, we'll utilize the cheerio library on the returned html which will essentially give us jQuery functionality
     var $ = cheerio.load(html);
 
     // // Finally, we'll define the variables we're going to capture
+    const selection = $('a') //all the a tags
 
-    console.log($('a').length)
+    // TODO: make this into a function that can be called. Should make sure link starts with http://. Tries 5 times before quitting.
+    // generates a random selction from a list of all the a tags
+    const selectionLength = selection.length
+    const randomNum = Math.random()
+    const randomIndex = Math.round(randomNum * (selectionLength - 1))
+    const randomSelection = selection[randomIndex]
+
+    // TODO: log the domain, .then? navigate to a new domain, start over
+
+    console.log(randomSelection.attribs.href)
   })
 
 })
