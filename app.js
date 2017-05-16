@@ -4,7 +4,8 @@ const cheerio = require('cheerio') // jQuery library for the back end
 const http = require('http')// might use this instead of request
 const request = require('request')
 
-const crawl = require('./crawl')
+const crawl = require('./crawl_functions/crawl')
+const randomSelection = require('./crawl_functions/randomSelection')
 
 const app = express()
 
@@ -23,75 +24,47 @@ app.use(morgan('dev'))
 // placeholder route to test the server
 app.get('/', (req, res, next) => res.send('You\'ve reached Passepartout. I\'m not here right now. Leave your message at the beep!'))
 
+//https://www.bennadel.com/blog/3201-exploring-recursive-promises-in-javascript.htm
+//https://mostafa-samir.github.io/async-recursive-patterns-pt2/
+// http://stackoverflow.com/questions/26515671/asynchronous-calls-and-recursion-with-node-js
+// Messing something up in here. Answers are above^^^
 app.get('/crawl', (req, res, next) => {
   console.log('request recieived')
 
-  const url = 'https://www.reddit.com/';
+  let url = 'https://www.reddit.com/'
+  let journal = []
+  let jumps = 2
 
+  requestPromise(url)
+  .then((newUrl) => {
+
+  })
+})
+
+function requestPromise (url) {
   // The structure of our request call
   // The first parameter is our URL
   // The callback function takes 3 parameters, an error, response status code and the html
-  request(url, (err, response, html) => {
-    console.log(`sending request to ${url}`)
+  return new Promise(function (resolve, reject) {
+    request(url, (err, response, html) => {
 
-    // First we'll check to make sure no errors occurred when making the request
-    if (err){
-      return console.error(err)
-    }
 
-    // // Next, we'll utilize the cheerio library on the returned html which will essentially give us jQuery functionality
-    var $ = cheerio.load(html);
+      // First we'll check to make sure no errors occurred when making the request
+      if (err){
+        return reject(err)
+      }
 
-    // // Finally, we'll define the variables we're going to capture
-    const selection = $('a') //all the a tags
+      // // Next, we'll utilize the cheerio library on the returned html which will essentially give us jQuery functionality
+      var $ = cheerio.load(html);
 
-    // TODO: make this into a function that can be called. Should make sure link starts with http://. Tries 5 times before quitting.
-    // generates a random selction from a list of all the a tags
-    const selectionLength = selection.length
-    const randomNum = Math.random()
-    const randomIndex = Math.round(randomNum * (selectionLength - 1))
-    const randomSelection = selection[randomIndex]
+      // // Finally, we'll define the variables we're going to capture
+      const selection = $('a') //all the a tags
 
-    // TODO: log the domain, .then? navigate to a new domain, start over
+      const destinationUrl = randomSelection(selection)
 
-    console.log(randomSelection.attribs.href)
+      resolve(destinationUrl)
+    })
   })
-
-})
-
-
-// app.get('/crawl', (req, res, next) => {
-//   console.log('request recieived')
-
-//   // options passed to http request
-//   const options = {
-//     hostname: 'www.reddit.com/',
-//     method: 'GET',
-//     agent: false
-//   }
-
-//   const request = http.request(options, (response) => {
-//     response.setEncoding('utf8')
-//     console.log(`request sent to ${options.hostname}`)
-//     response.on('data', (chunk) => {
-//       console.log(`RESPONSE: ${chunk}`)
-//     })
-
-//     response.on('end', () => {
-//       console.log('end of response')
-//     })
-
-//     response.on('error', (e) => {
-//       console.error(`There's been a problem: ${e}`)
-//     })
-
-//   // request.write(postData)
-//   request.end()
-//   res.sendStatus(200)
-
-//   })
-
-// })
-
+}
 
 module.exports = app
