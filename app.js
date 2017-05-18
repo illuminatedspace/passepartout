@@ -1,7 +1,6 @@
 const express = require('express')
 const morgan = require('morgan') // logging middleware
 const cheerio = require('cheerio') // jQuery library for the back end
-const http = require('http')// might use this instead of request
 const request = require('request')
 
 const crawl = require('./crawl_functions/crawl')
@@ -24,8 +23,20 @@ app.use(morgan('dev'))
 // placeholder route to test the server
 app.get('/', (req, res, next) => res.send('You\'ve reached Passepartout. I\'m not here right now. Leave your message at the beep!'))
 
-//https://www.bennadel.com/blog/3201-exploring-recursive-promises-in-javascript.htm
-//https://mostafa-samir.github.io/async-recursive-patterns-pt2/
+// var start = function(callback) {
+//   request.get({
+//     url: 'aaa.com'
+//   }, function (error, response, body) {
+//     var startingPlace = JSON.parse(body).id;
+//     recurse(startingPlace, otherFunc, function (results) {
+//         console.log ("Recursion finished with results " + results);
+//         callback();
+//     });
+//   });
+// };
+
+// https://www.bennadel.com/blog/3201-exploring-recursive-promises-in-javascript.htm
+// https://mostafa-samir.github.io/async-recursive-patterns-pt2/
 // http://stackoverflow.com/questions/26515671/asynchronous-calls-and-recursion-with-node-js
 // Messing something up in here. Answers are above^^^
 app.get('/crawl', (req, res, next) => {
@@ -33,15 +44,34 @@ app.get('/crawl', (req, res, next) => {
 
   let url = 'https://www.reddit.com/'
   let journal = []
-  let jumps = 2
+  let jumps = 50
 
-  requestPromise(url)
-  .then((newUrl) => {
+  explore(url)
 
-  })
+  // trying this workflow that was found here combined with the technique below
+  // http://stackoverflow.com/questions/26515671/asynchronous-calls-and-recursion-with-node-js
+  function explore (url) {
+    journal.push(url) // log location in journal
+
+    const previousJump = journal[journal.length - 1]
+
+    requestPromise(url)
+    .then(newUrl => {
+
+      if (!jumps--) return res.send(journal)
+
+      else explore(newUrl, previousJump)
+    })
+    .catch((err) => {
+      console.error(err)
+      journal.push({code: err.code, message: err.message})
+      res.send(journal)
+    })
+  }
 })
 
-function requestPromise (url) {
+
+function requestPromise (url, previousJump) {
   // The structure of our request call
   // The first parameter is our URL
   // The callback function takes 3 parameters, an error, response status code and the html
@@ -60,7 +90,11 @@ function requestPromise (url) {
       // // Finally, we'll define the variables we're going to capture
       const selection = $('a') //all the a tags
 
-      const destinationUrl = randomSelection(selection)
+      const destinationUrl = randomSelection(selection, previousJump)
+
+      if (destinationUrl.code === 1) {
+        return reject(destinationUrl)
+      }
 
       resolve(destinationUrl)
     })
