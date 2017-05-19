@@ -23,18 +23,6 @@ app.use(morgan('dev'))
 // placeholder route to test the server
 app.get('/', (req, res, next) => res.send('You\'ve reached Passepartout. I\'m not here right now. Leave your message at the beep!'))
 
-// var start = function(callback) {
-//   request.get({
-//     url: 'aaa.com'
-//   }, function (error, response, body) {
-//     var startingPlace = JSON.parse(body).id;
-//     recurse(startingPlace, otherFunc, function (results) {
-//         console.log ("Recursion finished with results " + results);
-//         callback();
-//     });
-//   });
-// };
-
 // https://www.bennadel.com/blog/3201-exploring-recursive-promises-in-javascript.htm
 // https://mostafa-samir.github.io/async-recursive-patterns-pt2/
 // http://stackoverflow.com/questions/26515671/asynchronous-calls-and-recursion-with-node-js
@@ -50,7 +38,7 @@ app.get('/crawl', (req, res, next) => {
 
   // trying this workflow that was found here combined with the technique below
   // http://stackoverflow.com/questions/26515671/asynchronous-calls-and-recursion-with-node-js
-  function explore (url) {
+  function explore () {
     journal.push(url) // log location in journal
 
     const previousJump = journal[journal.length - 1]
