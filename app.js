@@ -38,7 +38,7 @@ app.get('/crawl', (req, res, next) => {
 
   // trying this workflow that was found here combined with the technique below
   // http://stackoverflow.com/questions/26515671/asynchronous-calls-and-recursion-with-node-js
-  function explore () {
+  function explore (url) {
     journal.push(url) // log location in journal
 
     const previousJump = journal[journal.length - 1]
