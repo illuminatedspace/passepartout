@@ -30,40 +30,54 @@ app.get('/', (req, res, next) => res.send('You\'ve reached Passepartout. I\'m no
 app.get('/crawl', (req, res, next) => {
   console.log('request recieived')
 
-  let url = 'https://www.reddit.com/'
+  let startingUrl = 'https://www.reddit.com/'
   let journal = []
-  let jumps = 50
+  let jumps = 10
 
-  explore(url)
+  explore(startingUrl)
 
   // trying this workflow that was found here combined with the technique below
   // http://stackoverflow.com/questions/26515671/asynchronous-calls-and-recursion-with-node-js
   function explore (url) {
+    let outcome = true;
+    console.log(`recording ${url} in journal`)
     journal.push(url) // log location in journal
 
-    const previousJump = journal[journal.length - 1]
-
     requestPromise(url)
-    .then(newUrl => {
-
-      if (!jumps--) return res.send(journal)
-
-      else explore(newUrl, previousJump)
+    .then(newUrl => { // success handler
+      if (!jumps--) {
+        console.log('maximum jumps reached')
+        console.log('sending journal')
+        return res.send(journal)
+      } else {
+        console.log('explore newUrl', newUrl, explore(newUrl))
+        return explore(newUrl)
+      }
+    }, (reason) => { // rejection handler if request fails then check to see if the reason was max attempts. if so try again
+      console.log('~~~~error', reason.message)
+      outcome = false
+      return Promise.reject(reason)
     })
+    .then(result => {console.log(`result of explore after ${url}: ${result}`)}) // starting to think I need to promisify the explore function
     .catch((err) => {
       console.error(err)
       journal.push({code: err.code, message: err.message})
       res.send(journal)
     })
+    .then(() => {
+      console.log('OUTCOME!!!!!', outcome)
+      return outcome
+    })
   }
 })
 
-
-function requestPromise (url, previousJump) {
+// promisified request.get
+function requestPromise (url) {
   // The structure of our request call
   // The first parameter is our URL
   // The callback function takes 3 parameters, an error, response status code and the html
   return new Promise(function (resolve, reject) {
+    console.log(`jumping to url ${url}`)
     request(url, (err, response, html) => {
 
 
@@ -73,12 +87,13 @@ function requestPromise (url, previousJump) {
       }
 
       // // Next, we'll utilize the cheerio library on the returned html which will essentially give us jQuery functionality
+      console.log('gathering links')
       var $ = cheerio.load(html);
 
       // // Finally, we'll define the variables we're going to capture
       const selection = $('a') //all the a tags
 
-      const destinationUrl = randomSelection(selection, previousJump)
+      const destinationUrl = randomSelection(selection)
 
       if (destinationUrl.code === 1) {
         return reject(destinationUrl)
