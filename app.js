@@ -19,33 +19,72 @@ app.get('/', (req, res, next) => res.send('You\'ve reached Passepartout. I\'m no
 app.get('/crawl', (req, res, next) => {
   console.log('request recieived')
 
+// current execution order
+// Passepartout had been a sort of vagrant in his early years, and now yearned for repose on port 9000.
+// request recieived
+// jumps left 10
+// recording https://www.reddit.com/ in journal
+// jumping to url https://www.reddit.com/
+// gathering links
+// selecting link
+//     attempt number 1
+//         valid selection
+// ~*~*~*~*~*~*newUrl https://www.reddit.com/wiki/
+// jumps left 9
+// recording https://www.reddit.com/wiki/ in journal
+// jumping to url https://www.reddit.com/wiki/
+// after jump to https://www.reddit.com/ //<-- happening during request promise? before request promise execution
+// gathering links
+// selecting link
+//     attempt number 1
+//         valid selection
+// ~*~*~*~*~*~*newUrl https://www.reddit.com/r/gifs/
+
+
 // TODO: make the journal a linked list instead of an array
   let startingUrl = 'https://www.reddit.com/'
   let journal = []
-  let jumps = 0
+  let jumps = 10
 
-  explorePromise(startingUrl)
-  .catch(() => {
-    console.log('sucessfully caught')
-  })
+  travel(startingUrl)
+
+  // TODO: to match patter from explore, this should be put into it's own function and called on one line here
+  function travel (url) {
+    explorePromise(url)
+    .then((newUrl) => {
+      if (!(jumps--)) {
+        console.log('maximum jumps reached')
+        console.log('sending journal')
+        res.send(journal)
+      } else {
+        travel(newUrl)// if this fails then try again with another link
+      }
+    })
+    .then(() => {
+      console.log('after jump to', url)
+    })
+    .catch((err) => {
+      console.log('sucessfully caught')
+      journal.push({code: err.code, message: err.message})
+      res.send(journal)
+    })
+  }
 
 // promisifying explore
   function explorePromise (url) {
     return new Promise ((resolve, reject) => {
       explore(url)
-      .then((result) => {
-        console.log('~*~*~*~*~*~*RESULT', result)
-        resolve(result)
+      .then((newUrl) => {
+        console.log('~*~*~*~*~*~*newUrl', newUrl)
+        return resolve(newUrl)
       })
       .catch((err) => {
         console.log('!!!!!!!PROMISIFIED EXPLORE ERROR', err)
-        reject(err)
+        return reject(err)
       })
     })
   }
 
-  // trying this workflow that was found here combined with the technique below
-  // http://stackoverflow.com/questions/26515671/asynchronous-calls-and-recursion-with-node-js
   function explore (url) {
     console.log(`jumps left ${jumps}`)
     console.log(`recording ${url} in journal`)
@@ -53,25 +92,14 @@ app.get('/crawl', (req, res, next) => {
 
     return requestPromise(url)
     .then(newUrl => { // success handler
-      return Promise.reject('test')
-      // if (!jumps--) {
-      //   console.log('maximum jumps reached')
-      //   console.log('sending journal')
-      //   return journal
-      // } else {
-      //   console.log('explore newUrl', newUrl)
-      //   return {jumps: jumps, journal: journal, url: newUrl}
-      // }
-    }, (reason) => { // rejection handler if request fails then check to see if the reason was max attempts. if so try again
-      console.log('~~~~error', reason.message)
-      return Promise.reject(reason)
+      return newUrl
     })
-    // .catch((err) => {
-    //   console.error('error in explore', err)
-    //   return Promise.reject(err)
-    //   // journal.push({code: err.code, message: err.message})
-    //   // res.send(journal)
-    // })
+    .catch((err) => {
+      console.error('error in explore', err)
+      return Promise.reject(err)
+      // journal.push({code: err.code, message: err.message})
+      // res.send(journal)
+    })
   }
 })
 
