@@ -22,9 +22,27 @@ app.get('/crawl', (req, res, next) => {
 // TODO: make the journal a linked list instead of an array
   let startingUrl = 'https://www.reddit.com/'
   let journal = []
-  let jumps = 10
+  let jumps = 0
 
-  explore(startingUrl)
+  explorePromise(startingUrl)
+  .catch(() => {
+    console.log('sucessfully caught')
+  })
+
+// promisifying explore
+  function explorePromise (url) {
+    return new Promise ((resolve, reject) => {
+      explore(url)
+      .then((result) => {
+        console.log('~*~*~*~*~*~*RESULT', result)
+        resolve(result)
+      })
+      .catch((err) => {
+        console.log('!!!!!!!PROMISIFIED EXPLORE ERROR', err)
+        reject(err)
+      })
+    })
+  }
 
   // trying this workflow that was found here combined with the technique below
   // http://stackoverflow.com/questions/26515671/asynchronous-calls-and-recursion-with-node-js
@@ -33,26 +51,27 @@ app.get('/crawl', (req, res, next) => {
     console.log(`recording ${url} in journal`)
     journal.push(url) // log location in journal
 
-    requestPromise(url)
+    return requestPromise(url)
     .then(newUrl => { // success handler
-      if (!jumps--) {
-        console.log('maximum jumps reached')
-        console.log('sending journal')
-        return res.send(journal)
-      } else {
-        console.log('explore newUrl', newUrl)
-        explore(newUrl)
-      }
+      return Promise.reject('test')
+      // if (!jumps--) {
+      //   console.log('maximum jumps reached')
+      //   console.log('sending journal')
+      //   return journal
+      // } else {
+      //   console.log('explore newUrl', newUrl)
+      //   return {jumps: jumps, journal: journal, url: newUrl}
+      // }
     }, (reason) => { // rejection handler if request fails then check to see if the reason was max attempts. if so try again
       console.log('~~~~error', reason.message)
       return Promise.reject(reason)
     })
-    .then(result => {console.log(`result of explore after ${url}: ${result}`)}) // starting to think I need to promisify the explore function
-    .catch((err) => {
-      console.error(err)
-      journal.push({code: err.code, message: err.message})
-      res.send(journal)
-    })
+    // .catch((err) => {
+    //   console.error('error in explore', err)
+    //   return Promise.reject(err)
+    //   // journal.push({code: err.code, message: err.message})
+    //   // res.send(journal)
+    // })
   }
 })
 
