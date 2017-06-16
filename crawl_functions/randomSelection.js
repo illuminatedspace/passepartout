@@ -3,11 +3,8 @@
 
 
 function randomSelection (selection) {
-  // console.log('selection before for loop', selection)
   for (let attempt = selection.length; attempt > 0; attempt--) {
     const possibleSelection = parseSelection(selection)
-    // console.log('possibleSelection in randomSelection', possibleSelection)
-    // console.log('type of possible selection', typeof possibleSelection)
     if (selectionValid(possibleSelection)) return possibleSelection
   }
   const error = new Error('maximum attempts for vaid link attempted')
@@ -22,20 +19,15 @@ function parseSelection (selection) {
   const randomIndex = Math.round(randomNum * (selectionLength - 1))
   const newSelection = selection[randomIndex]
 
-  // console.log('newSelection in parseSelection', newSelection)
-  // console.log('New Selection in randomSelection', newSelection.attribs.href)
   return newSelection ? newSelection.attribs.href : null
 }
 
 function selectionValid (url) {
-  // console.log('url before if', url)
   if (!url) return false
   if (url.match(/(^(http:\/\/|https:\/\/|www\.))/gm)) {
-    // console.log(`is valid: ${url}`)
     return true
   }
 
-  // console.log(`is not valid: ${url}`)
   return false
 }
 
