@@ -3,10 +3,19 @@
 
 
 function randomSelection (selection) {
-  for (let attempt = selection.length; attempt > 0; attempt--) {
+  console.log('selecting link')
+  for (let attempt = 1; attempt < selection.length; attempt++) {
+    console.log(`    attempt number ${attempt}`)
     const possibleSelection = parseSelection(selection)
-    if (selectionValid(possibleSelection)) return possibleSelection
+    // console.log('possibleSelection in randomSelection', possibleSelection)
+    // console.log('type of possible selection', typeof possibleSelection)
+    if (selectionValid(possibleSelection)) {
+      console.log('        valid selection')
+      return possibleSelection
+    }
+    console.log('        invalid selection')
   }
+  console.log('    maximum attempts reached')
   const error = new Error('maximum attempts for vaid link attempted')
   error.message = 'maximum attempts for vaid link attempted'
   error.code = 1
@@ -24,6 +33,7 @@ function parseSelection (selection) {
 
 function selectionValid (url) {
   if (!url) return false
+  // checks to see if the string starts with www., http://, or https://
   if (url.match(/(^(http:\/\/|https:\/\/|www\.))/gm)) {
     return true
   }
