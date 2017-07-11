@@ -107,6 +107,7 @@ app.get('/crawl', (req, res, next) => {
   }
 })
 
+
 // promisified request.get
 function requestPromise (url) {
   // The structure of our request call
@@ -115,7 +116,6 @@ function requestPromise (url) {
     console.log(`jumping to url ${url}`)
     // The callback function takes 3 parameters, an error, response status code and the html
     request(url, (err, response, html) => {
-
       // First we'll check to make sure no errors occurred when making the request
       if (err){
         return reject(err)
@@ -128,7 +128,18 @@ function requestPromise (url) {
       // Finally, we'll define the variables we're going to capture
       const selection = $('a') //all the a tags
 
+      //get a random url
       const destinationUrl = randomSelection(selection)
+
+      // Utilize the cheerio library on the returned html which will essentially give us jQuery functionality
+      console.log('gathering links')
+      var $ = cheerio.load(html);
+
+      // grab all the A tags
+      const selection = $('a')
+
+      //get a random url
+      const destinationUrl = randomSelection(selection, previousJump)
 
       if (destinationUrl.code === 1) {
         return reject(destinationUrl)
