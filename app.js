@@ -17,7 +17,7 @@ app.get('/', (req, res, next) => res.send('You\'ve reached Passepartout. I\'m no
 
 // route to start the crawl
 app.get('/crawl', (req, res, next) => {
-  console.log('request recieived')
+  console.log('request received')
 
 // current execution order
 // Passepartout had been a sort of vagrant in his early years, and now yearned for repose on port 9000.
@@ -44,15 +44,17 @@ app.get('/crawl', (req, res, next) => {
 // TODO: make the journal a linked list instead of an array
   let startingUrl = 'https://www.reddit.com/'
   let journal = []
-  let jumps = 10
+  let jumps = 25
 
   travel(startingUrl)
 
-  // TODO: to match patter from explore, this should be put into it's own function and called on one line here
+  // TODO: to match pattern from explore, this should be put into it's own function and called on one line here
   function travel (url) {
     explorePromise(url)
     .then((newUrl) => {
-      if (!(jumps--)) {
+      console.log(`recording ${url} in journal`)
+      journal.push(url) // log location in journal
+      if (!(--jumps)) {
         console.log('maximum jumps reached')
         console.log('sending journal')
         res.send(journal)
@@ -60,11 +62,15 @@ app.get('/crawl', (req, res, next) => {
         travel(newUrl)// if this fails then try again with another link
       }
     })
-    .then(() => {
-      console.log('after jump to', url)
-    })
     .catch((err) => {
-      console.log('sucessfully caught')
+      console.log( `sucessfully caught err ${err.code}`)
+      if (err.code === 1) {
+        jumps += 1
+        const backtrackUrl = journal.pop() // grab the link from before the broken one
+        console.log(`trying again with backtrack ${backtrackUrl}`)
+        if (backtrackUrl) return travel(backtrackUrl)
+      }
+      console.log('sending journal with error')
       journal.push({code: err.code, message: err.message})
       res.send(journal)
     })
@@ -72,7 +78,7 @@ app.get('/crawl', (req, res, next) => {
 
 // promisifying explore
   function explorePromise (url) {
-    return new Promise ((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       explore(url)
       .then((newUrl) => {
         console.log('~*~*~*~*~*~*newUrl', newUrl)
@@ -87,8 +93,6 @@ app.get('/crawl', (req, res, next) => {
 
   function explore (url) {
     console.log(`jumps left ${jumps}`)
-    console.log(`recording ${url} in journal`)
-    journal.push(url) // log location in journal
 
     return requestPromise(url)
     .then(newUrl => { // success handler

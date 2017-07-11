@@ -4,7 +4,7 @@
 
 function randomSelection (selection) {
   console.log('selecting link')
-  for (let attempt = 1; attempt <= 5; attempt++) {
+  for (let attempt = 1; attempt < selection.length; attempt++) {
     console.log(`    attempt number ${attempt}`)
     const possibleSelection = parseSelection(selection)
     // console.log('possibleSelection in randomSelection', possibleSelection)
