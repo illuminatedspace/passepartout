@@ -1,6 +1,8 @@
 // for testing
 // console.log(selectionValid('wwwreddit.com'))
 
+const blacklist = ['facebook', 'twitter', 'linkedin', 'apple']
+
 
 function randomSelection (selection) {
   console.log('selecting link')
@@ -33,6 +35,9 @@ function parseSelection (selection) {
 
 function selectionValid (url) {
   if (!url) return false
+  // check for black list sites
+  const burned = blacklist.filter((blackSite) => url.includes(blackSite))
+  if (burned.length) return false
   // checks to see if the string starts with www., http://, or https://
   if (url.match(/(^(http:\/\/|https:\/\/|www\.))/gm)) {
     return true

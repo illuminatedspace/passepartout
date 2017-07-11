@@ -19,38 +19,20 @@ app.get('/', (req, res, next) => res.send('You\'ve reached Passepartout. I\'m no
 app.get('/crawl', (req, res, next) => {
   console.log('request received')
 
-// current execution order
-// Passepartout had been a sort of vagrant in his early years, and now yearned for repose on port 9000.
-// request recieived
-// jumps left 10
-// recording https://www.reddit.com/ in journal
-// jumping to url https://www.reddit.com/
-// gathering links
-// selecting link
-//     attempt number 1
-//         valid selection
-// ~*~*~*~*~*~*newUrl https://www.reddit.com/wiki/
-// jumps left 9
-// recording https://www.reddit.com/wiki/ in journal
-// jumping to url https://www.reddit.com/wiki/
-// after jump to https://www.reddit.com/ //<-- happening during request promise? before request promise execution
-// gathering links
-// selecting link
-//     attempt number 1
-//         valid selection
-// ~*~*~*~*~*~*newUrl https://www.reddit.com/r/gifs/
-
-
 // TODO: make the journal a linked list instead of an array
   let startingUrl = 'https://www.reddit.com/'
   let journal = []
-  let jumps = 25
+  let jumps = 300
 
   travel(startingUrl)
+  .catch((err) => {
+    console.log('problem with startingUrl')
+    console.error(err)
+  })
 
   // TODO: to match pattern from explore, this should be put into it's own function and called on one line here
   function travel (url) {
-    explorePromise(url)
+    return explorePromise(url)
     .then((newUrl) => {
       console.log(`recording ${url} in journal`)
       journal.push(url) // log location in journal
@@ -59,20 +41,25 @@ app.get('/crawl', (req, res, next) => {
         console.log('sending journal')
         res.send(journal)
       } else {
-        travel(newUrl)// if this fails then try again with another link
+        console.log(`jump ${jumps}`)
+        return travel(newUrl)// if this fails then try again with another link
       }
     })
     .catch((err) => {
       console.log( `sucessfully caught err ${err.code}`)
-      if (err.code === 1) {
+      if (err.code !== 2) {
+        journal.pop() // throw away the bad link
         jumps += 1
-        const backtrackUrl = journal.pop() // grab the link from before the broken one
-        console.log(`trying again with backtrack ${backtrackUrl}`)
-        if (backtrackUrl) return travel(backtrackUrl)
+        err.code = 2
+        return Promise.reject(err)
+      } else {
+        return travel(url)
       }
-      console.log('sending journal with error')
-      journal.push({code: err.code, message: err.message})
-      res.send(journal)
+      // console.log(`trying again with backtrack ${backtrackUrl}`)
+      // if (backtrackUrl) return travel(backtrackUrl)
+      // console.log('sending journal with error')
+      // journal.push({code: err.code, message: err.message})
+      // res.send(journal)
     })
   }
 
@@ -129,23 +116,14 @@ function requestPromise (url) {
       const selection = $('a') //all the a tags
 
       //get a random url
-      const destinationUrl = randomSelection(selection)
+      const selectionResult = randomSelection(selection)
 
-      // Utilize the cheerio library on the returned html which will essentially give us jQuery functionality
-      console.log('gathering links')
-      var $ = cheerio.load(html);
-
-      // grab all the A tags
-      const selection = $('a')
-
-      //get a random url
-      const destinationUrl = randomSelection(selection, previousJump)
-
-      if (destinationUrl.code === 1) {
-        return reject(destinationUrl)
+      if (selectionResult.code === 1) {
+        selectionResult.url = url
+        return reject(selectionResult)
       }
 
-      resolve(destinationUrl)
+      resolve(selectionResult)
     })
   })
 }
