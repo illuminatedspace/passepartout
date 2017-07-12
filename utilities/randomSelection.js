@@ -2,7 +2,7 @@
 // console.log(selectionValid('wwwreddit.com'))
 
 // sites that should not be jumped to
-const blacklist = ['facebook', 'twitter', 'linkedin', 'apple']
+const blacklist = ['facebook', 'linkedin', 'apple']
 
 function randomSelection (selection) {
   console.log('selecting link')

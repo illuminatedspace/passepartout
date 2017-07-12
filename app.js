@@ -7,7 +7,7 @@ const randomSelection = require('./utilities/randomSelection')
 
 const startingUrl = 'http://www.reddit.com/'
 const journal = []
-let jumps = 5
+let jumps = 150
 
 console.log('trip started')
 embark(startingUrl)
