@@ -6,23 +6,21 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "npm run start:dev",
-    "start:dev": "nodemon app.js",
-    "start:prod": "node app.js"
+    "start:production": "node server.js",
+    "start:dev": "nodemon -e js server.js"
   },
   "repository": {
     "type": "git",
-    "url": "http://git@github.com/illuminatedspace/passepartout.git"
+    "url": "git+ssh://git@github.com/illuminatedspace/passepartout.git"
   },
   "keywords": [
     "web",
     "scraper",
     "javascript",
     "node.js",
-    "fun",
-    "promises",
-    "recursion"
+    "fun"
   ],
-  "author": "Liz Phillips",
+  "author": "Liz Phillips, lizkristinaphillips.com",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/illuminatedspace/passepartout/issues"
@@ -30,6 +28,7 @@
   "homepage": "https://github.com/illuminatedspace/passepartout#readme",
   "dependencies": {
     "cheerio": "^0.22.0",
+    "express": "^4.15.2",
     "request": "^2.81.0"
   },
   "devDependencies": {

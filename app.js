@@ -1,57 +1,68 @@
-const cheerio = require('cheerio') // jQuery library functionality in the back end
-const request = require('request') // used for making the get requests to websites
+const express = require('express')
+const cheerio = require('cheerio') // jQuery library for the back end
+const request = require('request')
 
-const fs = require('fs')
+const randomSelection = require('./crawl_functions/randomSelection')
 
-const randomSelection = require('./utilities/randomSelection')
+const app = express()
+
+// starting url
+// TODO: make the get request a post/put so a webpage can be passed in or put it in the req.query
+
+// TODO: make some kind of front end interface that allows for options, a url to be form submitted, and results displayed
 
 
-console.log('trip started')
+// placeholder route to test the server
+app.get('/', (req, res, next) => res.send('You\'ve reached Passepartout. I\'m not here right now. Leave your message at the beep!'))
+
+// route to start the crawl
+app.get('/crawl', (req, res, next) => {
+  console.log('request received')
 
 // TODO: make the journal a linked list instead of an array
-let startingUrl = 'http://www.reddit.com/'
-let journal = []
-let jumps = 5
+  let startingUrl = 'https://www.reddit.com/'
+  let journal = []
+  let jumps = 300
 
-embark(startingUrl)
-.catch((err) => {
-  console.log('problem with startingUrl')
-  console.error(err)
-})
-
-// TODO: iife function, invoked when file runs
-function embark (url) {
-  return explorePromise(url)
-  .then((newUrl) => {
-    console.log(`recording ${url} in journal`)
-    journal.push(url) // log location in journal
-    if (!(--jumps)) {
-      console.log('maximum jumps reached')
-      console.log('writing journal')
-      const date = new Date()
-      // TODO: create dating function to return a correctly formatted date/file name
-      fs.writeFile(`./journals/maiden-voyage.json`, journal, () => {console.log('journal published')})
-    } else {
-      console.log(`jump ${jumps}`)
-      return embark(newUrl)
-    }
-  })
+  travel(startingUrl)
   .catch((err) => {
-    console.log( `sucessfully caught err ${err.code}`)
-    if (err.code !== 2) {
-      journal.pop() // throw away the bad link
-      jumps += 1
-      err.code = 2
-      return Promise.reject(err)
-    } else {
-      return embark(url)
-    }
+    console.log('problem with startingUrl')
+    console.error(err)
   })
-}
-// ()
-// ^^^ iife invocation
 
-// TODO: remove this function. It does nothing
+  // TODO: to match pattern from explore, this should be put into it's own function and called on one line here
+  function travel (url) {
+    return explorePromise(url)
+    .then((newUrl) => {
+      console.log(`recording ${url} in journal`)
+      journal.push(url) // log location in journal
+      if (!(--jumps)) {
+        console.log('maximum jumps reached')
+        console.log('sending journal')
+        res.send(journal)
+      } else {
+        console.log(`jump ${jumps}`)
+        return travel(newUrl)// if this fails then try again with another link
+      }
+    })
+    .catch((err) => {
+      console.log( `sucessfully caught err ${err.code}`)
+      if (err.code !== 2) {
+        journal.pop() // throw away the bad link
+        jumps += 1
+        err.code = 2
+        return Promise.reject(err)
+      } else {
+        return travel(url)
+      }
+      // console.log(`trying again with backtrack ${backtrackUrl}`)
+      // if (backtrackUrl) return travel(backtrackUrl)
+      // console.log('sending journal with error')
+      // journal.push({code: err.code, message: err.message})
+      // res.send(journal)
+    })
+  }
+
 // promisifying explore
   function explorePromise (url) {
     return new Promise((resolve, reject) => {
@@ -67,21 +78,24 @@ function embark (url) {
     })
   }
 
-// TODO: remove this function. It does nothing
-function explore (url) {
-  console.log(`jumps left ${jumps}`)
+  function explore (url) {
+    console.log(`jumps left ${jumps}`)
 
-  return requestPromise(url)
-  .then(newUrl => { // success handler
-    return newUrl
-  })
-  .catch((err) => {
-    console.error('error in explore', err)
-    return Promise.reject(err)
-  })
-}
+    return requestPromise(url)
+    .then(newUrl => { // success handler
+      return newUrl
+    })
+    .catch((err) => {
+      console.error('error in explore', err)
+      return Promise.reject(err)
+      // journal.push({code: err.code, message: err.message})
+      // res.send(journal)
+    })
+  }
+})
 
-// promisified request.get from request library
+
+// promisified request.get
 function requestPromise (url) {
   // The structure of our request call
   // The first parameter is our URL
@@ -114,4 +128,4 @@ function requestPromise (url) {
   })
 }
 
-// module.exports = app
+module.exports = app
