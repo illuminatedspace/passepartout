@@ -19,7 +19,6 @@ embark(startingUrl)
   console.error(err)
 })
 
-// TODO: iife function, invoked when file runs
 function embark (url) {
   return explorePromise(url)
   .then((newUrl) => {
@@ -48,8 +47,7 @@ function embark (url) {
     }
   })
 }
-// (startingUrl)
-// ^^^ iife invocation
+
 
 // TODO: remove this function. It does nothing
 // promisifying explore
