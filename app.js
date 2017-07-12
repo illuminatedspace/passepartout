@@ -48,7 +48,7 @@ function embark (url) {
     }
   })
 }
-// ()
+// (startingUrl)
 // ^^^ iife invocation
 
 // TODO: remove this function. It does nothing
