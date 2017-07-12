@@ -19,23 +19,23 @@ embark(startingUrl)
 })
 
 function embark (url) {
+  console.log(`jumps left ${jumps}`)
   return requestPromise(url)
   .then((newUrl) => {
     console.log(`recording ${url} in journal`)
     journal.push(url) // log location in journal
-    console.log(`jumps left ${jumps}`)
     if (!(--jumps)) {
       console.log('maximum jumps reached')
       console.log('writing journal')
-      const date = new Date()
       fs.writeFile(`./journals/maiden-voyage.json`, journal, () => {console.log('journal published')})
     } else {
-      console.log(`jump ${jumps}`)
+      console.log('-------------------------')
       return embark(newUrl)
     }
   })
   .catch((err) => {
     console.log( `sucessfully caught err ${err.code}`)
+    console.log('-------------------------')
     if (err.code !== 2) {
       journal.pop() // throw away the bad link
       jumps += 1
@@ -49,31 +49,18 @@ function embark (url) {
 
 // promisified request.get from request library
 function requestPromise (url) {
-  // The structure of our request call
-  // The first parameter is our URL
   return new Promise(function (resolve, reject) {
     console.log(`jumping to url ${url}`)
     request(url, (err, response, html) => {
-      if (err){
-        return reject(err)
-      }
-
+      if (err) return reject(err)
       console.log('gathering links')
-      // cheerio gives us jQuery functionality in backend
-      var $ = cheerio.load(html)
-
-      // grab all the a tags
-      const selection = $('a')
-
-      // get a random url with utility function
-      const selectionResult = randomSelection(selection)
-
-      // if there's a max attempts error reject the promise
-      if (selectionResult.code === 1) {
+      const $ = cheerio.load(html) // cheerio gives us jQuery functionality in backend
+      const selection = $('a') // grab all the a tags
+      const selectionResult = randomSelection(selection) // get a random url with utility function
+      if (selectionResult.code === 1) { // if max attempts error reject the promise
         selectionResult.url = url
         return reject(selectionResult)
       }
-
       resolve(selectionResult)
     })
   })
