@@ -19,6 +19,7 @@ embark(startingUrl)
   console.error(err)
 })
 
+// TODO: move these functions to another file?
 function embark (url) {
   return explorePromise(url)
   .then((newUrl) => {
@@ -47,7 +48,6 @@ function embark (url) {
     }
   })
 }
-
 
 // TODO: remove this function. It does nothing
 // promisifying explore
@@ -111,5 +111,3 @@ function requestPromise (url) {
     })
   })
 }
-
-// module.exports = app
