@@ -8,7 +8,6 @@ const randomSelection = require('./utilities/randomSelection')
 
 console.log('trip started')
 
-// TODO: make the journal a linked list instead of an array
 let startingUrl = 'http://www.reddit.com/'
 let journal = []
 let jumps = 5
@@ -19,7 +18,6 @@ embark(startingUrl)
   console.error(err)
 })
 
-// TODO: move these functions to another file?
 function embark (url) {
   return explorePromise(url)
   .then((newUrl) => {
@@ -29,7 +27,6 @@ function embark (url) {
       console.log('maximum jumps reached')
       console.log('writing journal')
       const date = new Date()
-      // TODO: create dating function to return a correctly formatted date/file name
       fs.writeFile(`./journals/maiden-voyage.json`, journal, () => {console.log('journal published')})
     } else {
       console.log(`jump ${jumps}`)
@@ -49,7 +46,6 @@ function embark (url) {
   })
 }
 
-// TODO: remove this function. It does nothing
 // promisifying explore
   function explorePromise (url) {
     return new Promise((resolve, reject) => {
@@ -65,12 +61,11 @@ function embark (url) {
     })
   }
 
-// TODO: remove this function. It does nothing
 function explore (url) {
   console.log(`jumps left ${jumps}`)
 
   return requestPromise(url)
-  .then(newUrl => { // success handler
+  .then(newUrl => {
     return newUrl
   })
   .catch((err) => {
@@ -85,23 +80,22 @@ function requestPromise (url) {
   // The first parameter is our URL
   return new Promise(function (resolve, reject) {
     console.log(`jumping to url ${url}`)
-    // The callback function takes 3 parameters, an error, response status code and the html
     request(url, (err, response, html) => {
-      // First we'll check to make sure no errors occurred when making the request
       if (err){
         return reject(err)
       }
 
-      // Next, we'll utilize the cheerio library on the returned html which will essentially give us jQuery functionality
       console.log('gathering links')
-      var $ = cheerio.load(html);
+      // cheerio gives us jQuery functionality in backend
+      var $ = cheerio.load(html)
 
-      // Finally, we'll define the variables we're going to capture
-      const selection = $('a') //all the a tags
+      // grab all the a tags
+      const selection = $('a')
 
-      //get a random url
+      // get a random url with utility function
       const selectionResult = randomSelection(selection)
 
+      // if there's a max attempts error reject the promise
       if (selectionResult.code === 1) {
         selectionResult.url = url
         return reject(selectionResult)
