@@ -1,17 +1,15 @@
+const fs = require('fs')
 const cheerio = require('cheerio') // jQuery library functionality in the back end
 const request = require('request') // used for making the get requests to websites
-
-const fs = require('fs')
 
 const randomSelection = require('./utilities/randomSelection')
 
 
-console.log('trip started')
-
-let startingUrl = 'http://www.reddit.com/'
-let journal = []
+const startingUrl = 'http://www.reddit.com/'
+const journal = []
 let jumps = 5
 
+console.log('trip started')
 embark(startingUrl)
 .catch((err) => {
   console.log('problem with startingUrl')
@@ -41,9 +39,7 @@ function embark (url) {
       jumps += 1
       err.code = 2
       return Promise.reject(err)
-    } else {
-      return embark(url)
-    }
+    } else return embark(url)
   })
 }
 
@@ -60,8 +56,7 @@ function requestPromise (url) {
       if (selectionResult.code === 1) { // if max attempts error reject the promise
         selectionResult.url = url
         return reject(selectionResult)
-      }
-      resolve(selectionResult)
+      } else resolve(selectionResult)
     })
   })
 }
