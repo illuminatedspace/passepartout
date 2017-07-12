@@ -19,10 +19,11 @@ embark(startingUrl)
 })
 
 function embark (url) {
-  return explorePromise(url)
+  return requestPromise(url)
   .then((newUrl) => {
     console.log(`recording ${url} in journal`)
     journal.push(url) // log location in journal
+    console.log(`jumps left ${jumps}`)
     if (!(--jumps)) {
       console.log('maximum jumps reached')
       console.log('writing journal')
@@ -43,34 +44,6 @@ function embark (url) {
     } else {
       return embark(url)
     }
-  })
-}
-
-// promisifying explore
-  function explorePromise (url) {
-    return new Promise((resolve, reject) => {
-      explore(url)
-      .then((newUrl) => {
-        console.log('~*~*~*~*~*~*newUrl', newUrl)
-        return resolve(newUrl)
-      })
-      .catch((err) => {
-        console.log('!!!!!!!PROMISIFIED EXPLORE ERROR', err)
-        return reject(err)
-      })
-    })
-  }
-
-function explore (url) {
-  console.log(`jumps left ${jumps}`)
-
-  return requestPromise(url)
-  .then(newUrl => {
-    return newUrl
-  })
-  .catch((err) => {
-    console.error('error in explore', err)
-    return Promise.reject(err)
   })
 }
 
