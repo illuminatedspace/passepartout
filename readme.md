@@ -5,7 +5,7 @@ I'm a webscraper named after the French valet of Jules Verne's *Around the World
 My internal libraries include:
 
 * Cheerio
-* Express
+* Request
 
 ## Credits
 I was built by Liz Phillips 🔮 [(illuminatedspace)](http://www.github.com/illuminatedspace).

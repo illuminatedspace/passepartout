@@ -3,11 +3,11 @@ const cheerio = require('cheerio') // jQuery library functionality in the back e
 const request = require('request') // used for making the get requests to websites
 
 const randomSelection = require('./utilities/randomSelection')
-
+const formatJournal = require('./utilities/formatJournal')
 
 const startingUrl = 'http://www.reddit.com/'
 const journal = []
-let jumps = 150
+let jumps = 80
 
 console.log('trip started')
 embark(startingUrl)
@@ -24,8 +24,13 @@ function embark (url) {
     journal.push(url) // log location in journal
     if (!(--jumps)) {
       console.log('maximum jumps reached')
+      console.log('formatting journal')
+      const formattedJournal = formatJournal(journal)
       console.log('writing journal')
-      fs.writeFile(`./journals/maiden-voyage.json`, journal, () => {console.log('journal published')})
+      fs.writeFile(`./journals/around-the-web-in-80-days.txt`, formattedJournal, (err) => {
+        if (err) console.error(err)
+        else console.log('journal published')
+      })
     } else {
       console.log('-------------------------')
       return embark(newUrl)
