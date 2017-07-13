@@ -1,81 +1,62 @@
-const express = require('express')
-const morgan = require('morgan') // logging middleware
-const cheerio = require('cheerio') // jQuery library for the back end
-const request = require('request')
+const fs = require('fs')
+const cheerio = require('cheerio') // jQuery library functionality in the back end
+const request = require('request') // used for making the get requests to websites
 
-const crawl = require('./crawl_functions/crawl')
-const randomSelection = require('./crawl_functions/randomSelection')
-
-const app = express()
-
-// logging middleware for debugging purposes
-// TODO: might make using this contigent on a node env variable
-// this way it won't run 'in production',
-// not sure what production means in terms of a web scraper
-app.use(morgan('dev'))
-
-// starting url
-// TODO: make the get request a post/put so a webpage can be passed in or put it in the req.query
-
-// TODO: make some kind of front end interface that allows for options, a url to be form submitted, and results displayed
+const randomSelection = require('./utilities/randomSelection')
 
 
-// placeholder route to test the server
-app.get('/', (req, res, next) => res.send('You\'ve reached Passepartout. I\'m not here right now. Leave your message at the beep!'))
+const startingUrl = 'http://www.reddit.com/'
+const journal = []
+let jumps = 150
 
-app.get('/crawl', (req, res, next) => {
-  console.log('request recieived')
-
-  let url = 'https://www.reddit.com/'
-  let journal = []
-  let jumps = 50
-
-  explore(url)
-
-  function explore (url) {
-    journal.push(url) // log location in journal
-
-    const previousJump = journal[journal.length - 1]
-
-    requestPromise(url)
-    .then(newUrl => {
-
-      if (!jumps--) return res.send(journal)
-
-      else explore(newUrl, previousJump)
-    })
-    .catch((err) => {
-      console.error(err)
-      journal.push({code: err.code, message: err.message})
-      res.send(journal)
-    })
-  }
+console.log('trip started')
+embark(startingUrl)
+.catch((err) => {
+  console.log('problem with startingUrl')
+  console.error(err)
 })
 
-
-function requestPromise (url, previousJump) {
-  return new Promise(function (resolve, reject) {
-    request(url, (err, response, html) => {
-      if (err){
-        return reject(err)
-      }
-
-      // Utilize the cheerio library on the returned html which will essentially give us jQuery functionality
-      var $ = cheerio.load(html);
-
-      // grab all the A tags
-      const selection = $('a')
-
-      //get a random url
-      const destinationUrl = randomSelection(selection, previousJump)
-
-      if (destinationUrl.code === 1) {
-        return reject(destinationUrl)
-      }
-
-      resolve(destinationUrl)
-    })
+function embark (url) {
+  console.log(`jumps left ${jumps}`)
+  return requestPromise(url)
+  .then((newUrl) => {
+    console.log(`recording ${url} in journal`)
+    journal.push(url) // log location in journal
+    if (!(--jumps)) {
+      console.log('maximum jumps reached')
+      console.log('writing journal')
+      fs.writeFile(`./journals/maiden-voyage.json`, journal, () => {console.log('journal published')})
+    } else {
+      console.log('-------------------------')
+      return embark(newUrl)
+    }
+  })
+  .catch((err) => {
+    console.log( `sucessfully caught err ${err.code}`)
+    console.log('-------------------------')
+    if (err.code !== 2) {
+      journal.pop() // throw away the bad link
+      jumps += 1
+      err.code = 2
+      return Promise.reject(err)
+    } else return embark(url)
   })
 }
 
-module.exports = app
+// promisified request.get from request library
+function requestPromise (url) {
+  return new Promise(function (resolve, reject) {
+    console.log(`jumping to url ${url}`)
+    request(url, (err, response, html) => {
+      if (err) return reject(err)
+      console.log('gathering links')
+      const $ = cheerio.load(html) // cheerio gives us jQuery functionality in backend
+      const selection = $('a') // grab all the a tags
+      const selectionResult = randomSelection(selection) // get a random url with utility function
+      if (selectionResult.code === 1) { // if max attempts error reject the promise
+        selectionResult.url = url
+        return reject(selectionResult)
+      } else resolve(selectionResult)
+    })
+  })
+}
