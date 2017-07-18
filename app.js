@@ -7,7 +7,7 @@ const formatJournal = require('./utilities/formatJournal')
 
 const startingUrl = 'http://www.reddit.com/'
 const journal = []
-let jumps = 80
+let jumps = 150
 
 console.log('trip started')
 embark(startingUrl)
