@@ -16,27 +16,22 @@ embark(startingUrl)
   console.error(err)
 })
 
-function embark (url) {
-  console.log(`jumps left ${jumps}`)
-  return requestPromise(url)
-  .then((newUrl) => {
-    console.log(`recording ${url} in journal`)
+async function embark (url) {
+  let newUrl
+  try {
+    newUrl = await requestPromise(url)
     journal.push(url) // log location in journal
     if (!(--jumps)) {
-      console.log('maximum jumps reached')
-      console.log('formatting journal')
       const formattedJournal = formatJournal(journal)
-      console.log('writing journal')
       fs.writeFile(`./journals/around-the-web-in-80-days.txt`, formattedJournal, (err) => {
         if (err) console.error(err)
         else console.log('journal published')
       })
     } else {
-      console.log('-------------------------')
-      return embark(newUrl)
+      return await embark(newUrl)
     }
-  })
-  .catch((err) => {
+  }
+  catch (err) {
     console.log( `sucessfully caught err ${err.code}`)
     console.log('-------------------------')
     if (err.code !== 2) {
@@ -44,9 +39,26 @@ function embark (url) {
       jumps += 1
       err.code = 2
       return Promise.reject(err)
-    } else return embark(url)
-  })
+    } else return await embark(url)
+  }
 }
+
+// async await request
+// function requestAwait (url) {
+//   console.log(`jumping to url ${url}`)
+//   request(url, (err, response, html) => {
+//     console.log('ERROR~!~!~!~!~', err)
+//     if (err) return err
+//     console.log('gathering links')
+//     const $ = cheerio.load(html) // cheerio gives us jQuery functionality in backend
+//     const selection = $('a') // grab all the a tags
+//     const selectionResult = randomSelection(selection) // get a random url with utility function
+//     if (selectionResult.code === 1) { // if max attempts error reject the promise
+//       selectionResult.url = url
+//       return selectionResult
+//     } else return selectionResult
+//   })
+// }
 
 // promisified request.get from request library
 function requestPromise (url) {
